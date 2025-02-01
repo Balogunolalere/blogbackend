@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-8 text-gray-500 text-sm">
+        <a href="/" class="hover:text-blue-600 transition-colors">Home</a>
+        <span class="mx-2">/</span>
+        <a href="/?category={{ article.category }}" class="hover:text-blue-600 transition-colors">{{ article.category|title }}</a>
+    </nav>
+
+    <!-- Article -->
+    <article class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="p-8">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
+                <ion-icon name="pricetag" class="mr-1"></ion-icon>
+                {{ article.category|title }}
+            </span>
+            
+            <h1 class="text-4xl font-bold text-gray-900 mt-4 mb-6">{{ article.title }}</h1>
+            
+            <div class="flex items-center space-x-4 mb-8 text-gray-500">
+                <div class="flex items-center">
+                    <ion-icon name="newspaper" class="mr-2"></ion-icon>
+                    {{ article.publisher.title }}
+                </div>
+                <div class="flex items-center">
+                    <ion-icon name="time" class="mr-2"></ion-icon>
+                    {{ article.published_date }}
+                </div>
+            </div>
+            
+            <div class="prose max-w-none">
+                <p class="text-gray-700 text-lg leading-relaxed">
+                    {{ article.description }}
+                </p>
+                
+                <div class="mt-8">
+                    <a 
+                        href="{{ article.url }}" 
+                        target="_blank" 
+                        class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+                    >
+                        <ion-icon name="open-outline" class="mr-2"></ion-icon>
+                        Read Full Article
+                    </a>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Related Articles -->
+    {% if related %}
+    <div class="mt-12">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Related Articles</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {% for rel in related %}
+            <a href="/article/{{ rel.url|urlencode }}" class="block bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ rel.title }}</h3>
+                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ rel.description }}</p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <ion-icon name="time-outline" class="mr-2"></ion-icon>
+                        {{ rel.published_date }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

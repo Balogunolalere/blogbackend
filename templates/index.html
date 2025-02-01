@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Latest News{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-white rounded-xl shadow-sm mb-8 p-8">
+    <h1 class="text-4xl font-bold text-gray-900 mb-4">Stay Informed</h1>
+    <p class="text-xl text-gray-600 mb-6">Discover the latest news from around the world.</p>
+    
+    <!-- Search and Filter Section -->
+    <form method="get" class="space-y-4">
+        <div class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1 relative">
+                <ion-icon name="search-outline" class="absolute left-3 top-3 text-gray-400"></ion-icon>
+                <input 
+                    type="text" 
+                    name="search" 
+                    value="{{ search or '' }}"
+                    placeholder="Search articles..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+            </div>
+            
+            <div class="w-full md:w-48">
+                <select 
+                    name="category" 
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                >
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat.lower() }}" {% if category == cat.lower() %}selected{% endif %}>
+                        {{ cat|title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <button 
+                type="submit" 
+                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
+            >
+                Search
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Articles Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% if articles %}
+        {% for article in articles %}
+        <article class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+            <a href="/article/{{ article.url|urlencode }}" class="block">
+                <div class="p-6">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-50 rounded-full">
+                            {{ article.category|title }}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            {{ article.published_date }}
+                        </span>
+                    </div>
+                    <h2 class="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">{{ article.title }}</h2>
+                    <p class="text-gray-600 text-sm line-clamp-3 mb-4">{{ article.description }}</p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <ion-icon name="newspaper-outline" class="mr-2"></ion-icon>
+                        {{ article.publisher.title }}
+                    </div>
+                </div>
+            </a>
+        </article>
+        {% endfor %}
+    {% else %}
+        <div class="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
+            <ion-icon name="search" class="text-5xl mb-4"></ion-icon>
+            <h3 class="text-xl font-medium">No articles found</h3>
+            <p class="mt-2">Try adjusting your search or filters</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="mt-12 flex justify-center">
+    <nav class="inline-flex rounded-lg shadow-sm overflow-hidden">
+        {% if current_page > 1 %}
+        <a 
+            href="?page={{ current_page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+            class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+            <ion-icon name="chevron-back-outline"></ion-icon>
+        </a>
+        {% endif %}
+        
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == current_page %}
+            <span class="px-4 py-2 border border-gray-300 bg-blue-50 text-blue-600 text-sm font-medium">
+                {{ p }}
+            </span>
+            {% else %}
+            <a 
+                href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+                class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+                {{ p }}
+            </a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if current_page < total_pages %}
+        <a 
+            href="?page={{ current_page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+            class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+            <ion-icon name="chevron-forward-outline"></ion-icon>
+        </a>
+        {% endif %}
+    </nav>
+</div>
+{% endif %}
+{% endblock %}
