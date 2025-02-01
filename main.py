@@ -34,7 +34,6 @@ app = FastAPI(title="Blog API")
 
 # Initialize templates and static files
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Pydantic models
 class Article(BaseModel):
