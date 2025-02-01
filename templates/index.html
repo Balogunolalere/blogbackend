@@ -4,13 +4,13 @@
 
 {% block content %}
 <!-- Hero Section -->
-<div class="bg-white rounded-xl shadow-sm mb-8 p-8">
-    <h1 class="text-4xl font-bold text-gray-900 mb-4">Stay Informed</h1>
-    <p class="text-xl text-gray-600 mb-6">Discover the latest news from around the world.</p>
+<div class="bg-white rounded-xl shadow-sm mb-4 sm:mb-8 p-4 sm:p-8">
+    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Stay Informed</h1>
+    <p class="text-base sm:text-lg md:text-xl text-gray-600 mb-4 sm:mb-6">Discover the latest news from around the world.</p>
     
     <!-- Search and Filter Section -->
     <form method="get" class="space-y-4">
-        <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <div class="flex-1 relative">
                 <ion-icon name="search-outline" class="absolute left-3 top-3 text-gray-400"></ion-icon>
                 <input 
@@ -47,14 +47,14 @@
 </div>
 
 <!-- Articles Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
     {% if articles %}
         {% for article in articles %}
         <article class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
             <a href="/article/{{ article.url|urlencode }}" class="block">
-                <div class="p-6">
-                    <div class="flex items-center space-x-2 mb-4">
-                        <span class="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-50 rounded-full">
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
+                        <span class="px-2 sm:px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-50 rounded-full">
                             {{ article.category|title }}
                         </span>
                         <span class="text-xs text-gray-500">
@@ -82,37 +82,53 @@
 
 <!-- Pagination -->
 {% if total_pages > 1 %}
-<div class="mt-12 flex justify-center">
-    <nav class="inline-flex rounded-lg shadow-sm overflow-hidden">
+<div class="mt-8 sm:mt-12 flex justify-center">
+    <nav class="inline-flex flex-wrap justify-center rounded-lg shadow-sm overflow-hidden" aria-label="Pagination">
+        <!-- Previous Button -->
         {% if current_page > 1 %}
-        <a 
-            href="?page={{ current_page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-            class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
+        <a href="?page={{ current_page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+            class="px-3 sm:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <ion-icon name="chevron-back-outline"></ion-icon>
         </a>
         {% endif %}
         
-        {% for p in range(1, total_pages + 1) %}
-            {% if p == current_page %}
-            <span class="px-4 py-2 border border-gray-300 bg-blue-50 text-blue-600 text-sm font-medium">
-                {{ p }}
+        <!-- Mobile Pagination -->
+        <div class="sm:hidden flex items-center">
+            <span class="px-4 py-2 border border-gray-300 bg-white text-sm text-gray-700">
+                Page {{ current_page }} of {{ total_pages }}
             </span>
-            {% else %}
-            <a 
-                href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-                class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-                {{ p }}
-            </a>
-            {% endif %}
-        {% endfor %}
+        </div>
         
+        <!-- Desktop Pagination -->
+        <div class="hidden sm:flex">
+            {% set window_size = 2 %}
+            {% for p in range(1, total_pages + 1) %}
+                {% if p == 1 
+                    or p == total_pages 
+                    or (p >= current_page - window_size and p <= current_page + window_size) 
+                %}
+                    {% if p == current_page %}
+                    <span class="px-4 py-2 border border-gray-300 bg-blue-50 text-blue-600 text-sm font-medium">
+                        {{ p }}
+                    </span>
+                    {% else %}
+                    <a href="?page={{ p }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+                        class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                        {{ p }}
+                    </a>
+                    {% endif %}
+                {% elif p == current_page - window_size - 1 or p == current_page + window_size + 1 %}
+                    <span class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-400">
+                        ...
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+        
+        <!-- Next Button -->
         {% if current_page < total_pages %}
-        <a 
-            href="?page={{ current_page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
-            class="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
+        <a href="?page={{ current_page + 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"
+            class="px-3 sm:px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             <ion-icon name="chevron-forward-outline"></ion-icon>
         </a>
         {% endif %}
