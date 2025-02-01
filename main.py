@@ -162,7 +162,7 @@ async def schedule_news_fetch():
     while True:
         # Calculate time until next 4:32 AM
         now = datetime.now()
-        target_time = datetime_time(hour=4, minute=41)  # 4:32 AM
+        target_time = datetime_time(hour=1, minute=0)  # 1:00 AM
         
         # Calculate next run time
         next_run = datetime.combine(now.date(), target_time)
