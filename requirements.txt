@@ -1,0 +1,7 @@
+fastapi[standard] 
+supabase 
+python-dotenv 
+gnews 
+uvicorn 
+jinja2 
+python-multipart
