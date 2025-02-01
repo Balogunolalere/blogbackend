@@ -158,16 +158,16 @@ async def fetch_and_store_news():
 from datetime import datetime, timedelta, time as datetime_time
 
 async def schedule_news_fetch():
-    """Schedule news fetching to run at 1 AM daily"""
+    """Schedule news fetching to run at 4:32 AM daily"""
     while True:
-        # Calculate time until next 1 AM
+        # Calculate time until next 4:32 AM
         now = datetime.now()
-        target_time = datetime_time(hour=1, minute=0)  # 1:00 AM
+        target_time = datetime_time(hour=4, minute=41)  # 4:32 AM
         
         # Calculate next run time
         next_run = datetime.combine(now.date(), target_time)
         if now.time() >= target_time:
-            next_run += timedelta(days=1)  # If it's past 1 AM, schedule for tomorrow
+            next_run += timedelta(days=1)  # If it's past 4:32 AM, schedule for tomorrow
         
         # Calculate seconds until next run
         delay = (next_run - now).total_seconds()
