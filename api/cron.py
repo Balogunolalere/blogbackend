@@ -8,9 +8,7 @@ import asyncio
 
 class handler(BaseHTTPRequestHandler):
     def do_GET(self):
-        asyncio.run(fetch_and_store_news())
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain')
-        self.end_headers()
-        self.wfile.write('Cron job completed'.encode())
+        # Vercel will make a GET request to /api/cron at 1 AM daily
+        asyncio.run(fetch_and_store_news())  # Run the news fetching function
+        self.send_response(200)  # Send success response
         return
