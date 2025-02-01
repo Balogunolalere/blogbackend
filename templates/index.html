@@ -1,6 +1,38 @@
 {% extends "base.html" %}
 
-{% block title %}Latest News{% endblock %}
+{% block title %}
+    {% if category %}
+        {{ category|title }} News | News Blog
+    {% elif search %}
+        Search Results for "{{ search }}" | News Blog
+    {% else %}
+        Latest News | News Blog
+    {% endif %}
+{% endblock %}
+
+{% block meta_description %}
+    {% if category %}
+        Stay updated with the latest {{ category|lower }} news and developments. Find comprehensive coverage of {{ category|lower }} stories from around the world.
+    {% elif search %}
+        Browse news articles related to "{{ search }}". Find the latest updates and developments on your topic of interest.
+    {% else %}
+        Discover the latest news from around the world. Get updates on technology, business, sports, and more from trusted sources.
+    {% endif %}
+{% endblock %}
+
+{% block meta_keywords %}
+    {% if category %}
+        {{ category|lower }}, news, updates, latest {{ category|lower }} news
+    {% elif search %}
+        {{ search }}, news, search results, latest news
+    {% else %}
+        news, latest news, world news, technology, business, sports
+    {% endif %}
+{% endblock %}
+
+{% block og_title %}
+    {{ self.title() }}
+{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->

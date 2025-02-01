@@ -254,7 +254,7 @@ async def home_page(
 
 @app.get("/article/{url:path}", response_class=HTMLResponse)
 async def article_details(request: Request, url: str):
-    """Render article details page"""
+    """Render article details page with structured data"""
     try:
         # Get article from database
         result = supabase.table("articles").select("*").eq("url", url).execute()
@@ -269,13 +269,34 @@ async def article_details(request: Request, url: str):
             .neq("url", url)\
             .limit(3)\
             .execute()
-            
+        
+        # Create structured data for article
+        structured_data = {
+            "@context": "https://schema.org",
+            "@type": "NewsArticle",
+            "headline": article["title"],
+            "description": article["description"],
+            "datePublished": article["published_date"],
+            "url": article["url"],
+            "publisher": {
+                "@type": "Organization",
+                "name": article["publisher"]["title"],
+                "url": article["publisher"]["href"]
+            },
+            "mainEntityOfPage": {
+                "@type": "WebPage",
+                "@id": str(request.url)
+            },
+            "articleSection": article["category"]
+        }
+
         return templates.TemplateResponse(
             "article.html", 
             {
                 "request": request, 
                 "article": article,
-                "related": related.data
+                "related": related.data,
+                "structured_data": json.dumps(structured_data, ensure_ascii=False)
             }
         )
     except Exception as e:
