@@ -1,4 +1,3 @@
-```markdown
 # News Aggregator API and Web Interface
 
 A FastAPI-powered news aggregator that fetches articles from Google News, stores them in a Supabase database, and provides a REST API and web interface for browsing. Includes scheduled daily updates, search, pagination, and categorization.
