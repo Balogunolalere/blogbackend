@@ -63,24 +63,9 @@
         <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-4 sm:mb-6">Related Articles</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             {% for rel in related %}
-            <a href="/article/{{ rel.url|urlencode }}" class="block bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+            <a href="/article/{{ rel.url|replace('/', '_')|urlencode }}" class="block bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ rel.title }}</h3>
-                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ rel.description }}</p>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <ion-icon name="time-outline" class="mr-2"></ion-icon>
-                        {{ rel.published_date }}
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ rel.title }}</h3>
-        </div>
-    </div>
-    {% endif %}
-</div>
-{% endblock %}
-
                     <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ rel.description }}</p>
                     <div class="flex items-center text-sm text-gray-500">
                         <ion-icon name="time-outline" class="mr-2"></ion-icon>

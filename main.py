@@ -255,10 +255,21 @@ async def home_page(
 async def article_details(request: Request, url: str):
     """Render article details page with structured data"""
     try:
+        # Decode URL and convert back from our safe format
+        decoded_url = unquote(url).replace('_', '/')
+        
         # Get article from database
-        result = supabase.table("articles").select("*").eq("url", url).execute()
+        result = supabase.table("articles")\
+            .select("*")\
+            .eq("url", decoded_url)\
+            .execute()
+            
         if not result.data:
-            raise HTTPException(status_code=404, detail="Article not found")
+            logger.error(f"Article not found. URL: {url}, Decoded: {decoded_url}")
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Article not found. Please check the URL."
+            )
         
         article = result.data[0]
         # Get related articles from same category
@@ -297,34 +308,6 @@ async def article_details(request: Request, url: str):
                 "related": related.data,
                 "structured_data": json.dumps(structured_data, ensure_ascii=False)
             }
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/debug/article/{url:path}")
-async def debug_article_url(url: str):
-    """Debug endpoint to check URL processing"""
-    decoded_url = unquote(url)
-            }
-    result = supabase.table("articles").select("url").ilike("url", f"%{decoded_url}%").execute()
-    return {
-        "original_url": url,
-        "decoded_url": decoded_url,
-        "found_urls": [r["url"] for r in result.data] if result.data else [],
-        "matches": len(result.data) if result.data else 0
-    }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
