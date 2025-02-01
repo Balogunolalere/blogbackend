@@ -13,7 +13,6 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 # Load environment variables
