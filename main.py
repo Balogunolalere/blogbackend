@@ -13,6 +13,7 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 # Load environment variables
@@ -309,16 +310,6 @@ async def article_details(request: Request, url: str):
             }
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/cron")
-async def cron_job():
-    """Endpoint for Vercel cron job to trigger news fetching"""
-    try:
-        await fetch_and_store_news()
-        return {"status": "success", "message": "News fetched and stored successfully"}
-    except Exception as e:
-        logger.error(f"Cron job failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
