@@ -29,8 +29,13 @@ supabase: Client = create_client(
     os.getenv("SUPABASE_KEY")
 )
 
+from api.cron import router as cron_router
+
 # Initialize FastAPI
 app = FastAPI(title="Blog API")
+
+# Include the cron router
+app.include_router(cron_router)
 
 # Initialize templates and static files
 templates = Jinja2Templates(directory="templates")
