@@ -13,7 +13,6 @@ import os
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 
 # Load environment variables
@@ -158,30 +157,23 @@ async def fetch_and_store_news():
 from datetime import datetime, timedelta, time as datetime_time
 
 async def schedule_news_fetch():
-    """Schedule news fetching to run at 4:32 AM daily"""
+    """Schedule news fetching to run every 6 hours"""
+    SIX_HOURS = 6 * 60 * 60  # 6 hours in seconds
+    
     while True:
-        # Calculate time until next 4:32 AM
-        now = datetime.now()
-        target_time = datetime_time(hour=1, minute=0)  # 1:00 AM
-        
-        # Calculate next run time
-        next_run = datetime.combine(now.date(), target_time)
-        if now.time() >= target_time:
-            next_run += timedelta(days=1)  # If it's past 4:32 AM, schedule for tomorrow
-        
-        # Calculate seconds until next run
-        delay = (next_run - now).total_seconds()
-        
-        # Sleep until next scheduled time
-        logger.info(f"Next news fetch scheduled for: {next_run}")
-        await asyncio.sleep(delay)
-        
-        # Fetch news
-        await fetch_and_store_news()
+        try:
+            await fetch_and_store_news()
+            logger.info(f"Next news fetch scheduled in {SIX_HOURS} seconds (6 hours)")
+            await asyncio.sleep(SIX_HOURS)
+        except Exception as e:
+            logger.error(f"Error in scheduled fetch: {str(e)}")
+            # If there's an error, wait 5 minutes before retrying
+            await asyncio.sleep(300)
 
 @app.on_event("startup")
 async def startup_event():
     """Start the news fetching schedule on startup"""
+    # Create task without explicit loop argument
     asyncio.create_task(schedule_news_fetch())
 
 @app.get("/news", response_model=List[Article])
