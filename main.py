@@ -7,7 +7,6 @@ from functools import wraps
 from typing import Callable, List, Dict
 import logging
 from urllib.parse import quote, unquote
-import asyncio
 
 import os
 from dotenv import load_dotenv
@@ -154,28 +153,6 @@ async def fetch_and_store_news():
         logger.error(f"Failed to fetch and store news: {str(e)}")
         raise
 
-from datetime import datetime, timedelta, time as datetime_time
-
-async def schedule_news_fetch():
-    """Schedule news fetching to run every 6 hours"""
-    SIX_HOURS = 6 * 60 * 60  # 6 hours in seconds
-    
-    while True:
-        try:
-            await fetch_and_store_news()
-            logger.info(f"Next news fetch scheduled in {SIX_HOURS} seconds (6 hours)")
-            await asyncio.sleep(SIX_HOURS)
-        except Exception as e:
-            logger.error(f"Error in scheduled fetch: {str(e)}")
-            # If there's an error, wait 5 minutes before retrying
-            await asyncio.sleep(300)
-
-@app.on_event("startup")
-async def startup_event():
-    """Start the news fetching schedule on startup"""
-    # Create task without explicit loop argument
-    asyncio.create_task(schedule_news_fetch())
-
 @app.get("/news", response_model=List[Article])
 async def get_news(category: str = None, limit: int = 10):
     """Get news articles with optional category filter"""
@@ -302,6 +279,20 @@ async def article_details(request: Request, url: str):
             }
         )
     except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/cron")
+async def cron_job(request: Request):
+    """Endpoint for Vercel cron job to fetch and store news"""
+    # Verify the request is from Vercel
+    if request.headers.get("authorization") != f"Bearer {os.getenv('CRON_SECRET')}":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    try:
+        articles = await fetch_and_store_news()
+        return {"status": "success", "articles_count": len(articles)}
+    except Exception as e:
+        logger.error(f"Cron job failed: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
