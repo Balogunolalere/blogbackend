@@ -4,10 +4,9 @@ from gnews import GNews
 import json
 import time
 from functools import wraps
-from typing import Callable, List, Dict
+from typing import List, Dict, Callable
 import logging
 from urllib.parse import quote, unquote
-import asyncio
 
 import os
 from dotenv import load_dotenv
@@ -109,50 +108,6 @@ COUNTRIES = {
     'Israel': 'IL',
     'Germany': 'DE'
 }
-
-async def fetch_and_store_news():
-    """Fetch news and store in Supabase with duplicate handling"""
-    try:
-        all_articles = []
-        processed_urls = set()  # Track URLs we've seen
-        
-        # Fetch country news
-        for country_name, country_code in COUNTRIES.items():
-            google_news.country = country_code
-            safe_country_name = quote(country_name.replace('_', ' '))
-            news = fetch_news(google_news.get_news_by_location, safe_country_name)
-            if news:
-                for article in news:
-                    formatted = format_article(article, f"country_{country_code}")
-                    # Only add if we haven't seen this URL
-                    if formatted['url'] not in processed_urls:
-                        processed_urls.add(formatted['url'])
-                        all_articles.append(formatted)
-
-        # Fetch topic news
-        for topic in TOPICS:
-            news = fetch_news(google_news.get_news_by_topic, topic)
-            if news:
-                for article in news:
-                    formatted = format_article(article, topic.lower())
-                    # Only add if we haven't seen this URL
-                    if formatted['url'] not in processed_urls:
-                        processed_urls.add(formatted['url'])
-                        all_articles.append(formatted)
-
-        # Use upsert to handle duplicates in database
-        if all_articles:
-            supabase.table("articles").upsert(
-                all_articles,
-                on_conflict="url"  # Use URL as the conflict resolution key
-            ).execute()
-
-        logger.info(f"Successfully stored {len(all_articles)} unique articles")
-        return all_articles
-
-    except Exception as e:
-        logger.error(f"Failed to fetch and store news: {str(e)}")
-        raise
 
 @app.get("/news", response_model=List[Article])
 async def get_news(category: str = None, limit: int = 10):
@@ -282,31 +237,6 @@ async def article_details(request: Request, url: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def schedule_news_fetch():
-    """Schedule news fetching to run every 5 minutes"""
-    FIVE_MINUTES = 5 * 60  # 5 minutes in seconds
-    
-    while True:
-        try:
-            await fetch_and_store_news()
-            logger.info(f"Next news fetch scheduled in {FIVE_MINUTES} seconds (5 minutes)")
-            await asyncio.sleep(FIVE_MINUTES)
-        except Exception as e:
-            logger.error(f"Error in scheduled fetch: {str(e)}")
-            # If there's an error, wait 30 seconds before retrying
-            await asyncio.sleep(30)
-
-@app.on_event("startup")
-async def startup_event():
-    """Start the news fetching schedule on startup"""
-    # Create task without explicitly passing loop
-    asyncio.create_task(schedule_news_fetch())
-
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=8000,
-        loop="none"  # Let uvicorn use the default event loop
-    )
+    uvicorn.run(app, host="0.0.0.0", port=8000)
