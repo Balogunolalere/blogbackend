@@ -43,6 +43,7 @@ class Article(BaseModel):
     published_date: str
     description: str
     publisher: Dict[str, str]
+    image: str = None  # Add image field
     source: str = "gnews"
     category: str = "general"
 
@@ -81,6 +82,7 @@ def format_article(article, category="general"):
         "url": base_url,  # Use cleaned URL
         "published_date": article.get("published date", ""),
         "description": article.get("description", "").strip(),
+        "image": article.get("image", ""),  # Add image URL
         "publisher": {
             "href": article.get("publisher", {}).get("href", "").strip(),
             "title": article.get("publisher", {}).get("title", "").strip()

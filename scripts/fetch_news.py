@@ -60,14 +60,12 @@ def format_article(article, category="general"):
     url = article.get("url", "")
     base_url = url.split('?')[0]
     
-    # Convert published date to timestamp if exists
-    published_date = article.get("published date", "")
-    
     return {
         "title": article.get("title", "").strip(),
         "url": base_url,
-        "published_date": published_date,
+        "published_date": article.get("published date", ""),
         "description": article.get("description", "").strip(),
+        "image": article.get("image", ""),  # Add image URL
         "publisher": {
             "href": article.get("publisher", {}).get("href", "").strip(),
             "title": article.get("publisher", {}).get("title", "").strip()
