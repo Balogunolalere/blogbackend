@@ -48,41 +48,47 @@
             </div>
             
             <!-- Add Social Share Buttons -->
-            <div class="flex items-center gap-4 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
                 <span class="text-gray-600 text-sm font-medium">Share this:</span>
-                <!-- Native Web Share API Button -->
-                <button 
-                    onclick="shareArticle()" 
-                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-yellow-500 text-white rounded-lg hover:from-red-700 hover:to-yellow-600 transition-all duration-200"
-                >
-                    <ion-icon name="share-social" class="mr-2"></ion-icon>
-                    Share
-                </button>
-                
-                <!-- Direct Share Links -->
-                <div class="flex gap-2">
-                    <a href="https://wa.me/?text={{ article.title|urlencode }}%20{{ request.url._url|urlencode }}" 
-                       target="_blank"
-                       class="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors">
-                        <ion-icon name="logo-whatsapp" class="text-xl"></ion-icon>
-                    </a>
-                    
-                    <a href="https://telegram.me/share/url?url={{ request.url._url|urlencode }}&text={{ article.title|urlencode }}"
-                       target="_blank"
-                       class="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
-                        <ion-icon name="paper-plane" class="text-xl"></ion-icon>
-                    </a>
-                    
-                    <a href="https://twitter.com/intent/tweet?text={{ article.title|urlencode }}&url={{ request.url._url|urlencode }}"
-                       target="_blank"
-                       class="p-2 text-blue-400 hover:bg-blue-50 rounded-full transition-colors">
-                        <ion-icon name="logo-twitter" class="text-xl"></ion-icon>
-                    </a>
-                    
-                    <button onclick="copyToClipboard('{{ request.url._url }}')"
-                            class="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors">
-                        <ion-icon name="link" class="text-xl"></ion-icon>
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Native Web Share API Button -->
+                    <button 
+                        onclick="shareArticle()" 
+                        class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-yellow-500 text-white rounded-lg hover:from-red-700 hover:to-yellow-600 transition-all duration-200"
+                    >
+                        <ion-icon name="share-social" class="mr-2"></ion-icon>
+                        Share
                     </button>
+                    
+                    <!-- Direct Share Links -->
+                    <div class="flex flex-wrap gap-2">
+                        <a href="https://wa.me/?text={{ article.title|urlencode }}%20{{ request.url._url|urlencode }}" 
+                           target="_blank"
+                           class="inline-flex items-center justify-center w-10 h-10 text-green-600 hover:bg-green-50 rounded-full transition-colors"
+                           title="Share on WhatsApp">
+                            <ion-icon name="logo-whatsapp" class="text-xl"></ion-icon>
+                        </a>
+                        
+                        <a href="https://telegram.me/share/url?url={{ request.url._url|urlencode }}&text={{ article.title|urlencode }}"
+                           target="_blank"
+                           class="inline-flex items-center justify-center w-10 h-10 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
+                           title="Share on Telegram">
+                            <ion-icon name="paper-plane" class="text-xl"></ion-icon>
+                        </a>
+                        
+                        <a href="https://twitter.com/intent/tweet?text={{ article.title|urlencode }}&url={{ request.url._url|urlencode }}"
+                           target="_blank"
+                           class="inline-flex items-center justify-center w-10 h-10 text-blue-400 hover:bg-blue-50 rounded-full transition-colors"
+                           title="Share on Twitter">
+                            <ion-icon name="logo-twitter" class="text-xl"></ion-icon>
+                        </a>
+                        
+                        <button onclick="copyToClipboard('{{ request.url._url }}')"
+                                class="inline-flex items-center justify-center w-10 h-10 text-gray-600 hover:bg-gray-50 rounded-full transition-colors"
+                                title="Copy link">
+                            <ion-icon name="link" class="text-xl"></ion-icon>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -104,25 +110,38 @@
         </div>
     </article>
 
-    <!-- Enhanced Related Articles -->
+    <!-- Enhanced Related Articles with Scroll -->
     {% if related %}
     <div class="mt-8 sm:mt-12">
-        <h2 class="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4 sm:mb-6">
+        <h2 class="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-500 mb-4 sm:mb-6">
             Related Articles
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
-            {% for rel in related %}
-            <a href="/article/{{ rel.url|replace('/', '_')|urlencode }}" class="block bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ rel.title }}</h3>
-                    <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ rel.description }}</p>
-                    <div class="flex items-center text-sm text-gray-500">
-                        <ion-icon name="time-outline" class="mr-2"></ion-icon>
-                        {{ rel.published_date }}
-                    </div>
-                </div>
-            </a>
-            {% endfor %}
+        
+        <div class="relative group">
+            <button onclick="scrollRelated('left')" 
+                    class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg text-red-600 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
+            </button>
+
+            <div id="related-container" class="flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-4">
+                {% for rel in related %}
+                <article class="w-[300px] flex-shrink-0 bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+                    <a href="/article/{{ rel.url|replace('/', '_')|urlencode }}" class="block p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ rel.title }}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-2 mb-4">{{ rel.description }}</p>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <ion-icon name="time-outline" class="mr-2"></ion-icon>
+                            {{ rel.published_date }}
+                        </div>
+                    </a>
+                </article>
+                {% endfor %}
+            </div>
+
+            <button onclick="scrollRelated('right')" 
+                    class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg text-red-600 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100 disabled:opacity-0">
+                <ion-icon name="chevron-forward-outline" class="text-xl"></ion-icon>
+            </button>
         </div>
     </div>
     {% endif %}
@@ -169,9 +188,58 @@ async function copyToClipboard(text) {
     }
 }
 
+function scrollRelated(direction) {
+    const container = document.getElementById('related-container');
+    const scrollAmount = 300; // Width of one article card
+    
+    if (direction === 'left') {
+        container.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+        });
+    } else {
+        container.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Update button states after scroll
+    setTimeout(updateRelatedButtons, 100);
+}
+
+function updateRelatedButtons() {
+    const container = document.getElementById('related-container');
+    const leftButton = container.previousElementSibling;
+    const rightButton = container.nextElementSibling;
+    
+    // Update button states based on scroll position
+    if (container.scrollLeft <= 0) {
+        leftButton.setAttribute('disabled', '');
+    } else {
+        leftButton.removeAttribute('disabled');
+    }
+    
+    if (container.scrollLeft + container.clientWidth >= container.scrollWidth) {
+        rightButton.setAttribute('disabled', '');
+    } else {
+        rightButton.removeAttribute('disabled');
+    }
+}
+
 // Initialize sharing buttons tooltips
 document.addEventListener('DOMContentLoaded', function() {
     // Add hover effects for share buttons if needed
+    if (document.getElementById('related-container')) {
+        updateRelatedButtons();
+        
+        // Update on resize
+        window.addEventListener('resize', updateRelatedButtons);
+        
+        // Update on scroll
+        const container = document.getElementById('related-container');
+        container.addEventListener('scroll', updateRelatedButtons);
+    }
 });
 </script>
 {% endblock %}

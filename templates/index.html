@@ -82,14 +82,26 @@
     </div>
 </div>
 
-<!-- Category Pills -->
-<div class="flex gap-2 mb-6 overflow-x-auto pb-2">
-    {% for cat in categories %}
-    <a href="/?category={{ cat.lower() }}" 
-       class="px-4 py-2 rounded-full text-sm font-medium {% if category == cat.lower() %}bg-gradient-to-r from-red-600 to-yellow-500 text-white{% else %}bg-white text-gray-600 hover:bg-red-50{% endif %} shadow-sm transition-all duration-200 whitespace-nowrap">
-        {{ cat|title }}
-    </a>
-    {% endfor %}
+<!-- Enhanced Category Pills with Scroll Buttons -->
+<div class="relative group">
+    <button onclick="scrollCategories('left')" 
+            class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg text-red-600 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100 disabled:opacity-0">
+        <ion-icon name="chevron-back-outline" class="text-xl"></ion-icon>
+    </button>
+
+    <div id="category-container" class="flex gap-2 mb-6 overflow-x-auto scrollbar-hide scroll-smooth pb-2 px-4">
+        {% for cat in categories %}
+        <a href="/?category={{ cat.lower() }}" 
+           class="px-4 py-2 rounded-full text-sm font-medium {% if category == cat.lower() %}bg-gradient-to-r from-red-600 to-yellow-500 text-white{% else %}bg-white text-gray-600 hover:bg-red-50{% endif %} shadow-sm transition-all duration-200 whitespace-nowrap flex-shrink-0">
+            {{ cat|title }}
+        </a>
+        {% endfor %}
+    </div>
+
+    <button onclick="scrollCategories('right')" 
+            class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-lg text-red-600 hover:bg-red-50 transition-all duration-200 opacity-0 group-hover:opacity-100 disabled:opacity-0">
+        <ion-icon name="chevron-forward-outline" class="text-xl"></ion-icon>
+    </button>
 </div>
 
 <!-- Articles Grid with hover effects -->
@@ -183,3 +195,68 @@
 </div>
 {% endif %}
 {% endblock %}
+
+<!-- Add this before the closing body tag -->
+<style>
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+</style>
+
+<script>
+function scrollCategories(direction) {
+    const container = document.getElementById('category-container');
+    const scrollAmount = container.clientWidth * 0.8;
+    
+    if (direction === 'left') {
+        container.scrollBy({
+            left: -scrollAmount,
+            behavior: 'smooth'
+        });
+    } else {
+        container.scrollBy({
+            left: scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+    
+    // Update button states after scroll
+    setTimeout(updateScrollButtons, 100);
+}
+
+function updateScrollButtons() {
+    const container = document.getElementById('category-container');
+    const leftButton = container.previousElementSibling;
+    const rightButton = container.nextElementSibling;
+    
+    // Update left button state
+    if (container.scrollLeft <= 0) {
+        leftButton.setAttribute('disabled', '');
+    } else {
+        leftButton.removeAttribute('disabled');
+    }
+    
+    // Update right button state
+    if (container.scrollLeft + container.clientWidth >= container.scrollWidth) {
+        rightButton.setAttribute('disabled', '');
+    } else {
+        rightButton.removeAttribute('disabled');
+    }
+}
+
+// Initialize scroll buttons state
+document.addEventListener('DOMContentLoaded', function() {
+    updateScrollButtons();
+    
+    // Update on resize
+    window.addEventListener('resize', updateScrollButtons);
+    
+    // Update on scroll
+    const container = document.getElementById('category-container');
+    container.addEventListener('scroll', updateScrollButtons);
+});
+</script>
