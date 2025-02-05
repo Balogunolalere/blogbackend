@@ -7,8 +7,11 @@ from functools import wraps
 from typing import List, Dict, Callable
 import logging
 from urllib.parse import quote, unquote
-
+from fastapi.responses import FileResponse
+from PIL import Image, ImageDraw, ImageFont
+import textwrap
 import os
+
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from fastapi.templating import Jinja2Templates
@@ -234,6 +237,41 @@ async def article_details(request: Request, url: str):
                 "structured_data": json.dumps(structured_data, ensure_ascii=False)
             }
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/share-image/{url:path}")
+async def generate_share_image(url: str):
+    """Generate social share image for article"""
+    try:
+        # Decode URL and get article
+        decoded_url = unquote(url).replace('_', '/')
+        result = supabase.table("articles").select("*").eq("url", decoded_url).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Article not found")
+            
+        article = result.data[0]
+        
+        # Create image (you'll need to set up proper fonts and template)
+        img = Image.new('RGB', (1200, 630), color='white')
+        d = ImageDraw.Draw(img)
+        
+        # Add text and styling
+        font_title = ImageFont.truetype('path/to/font.ttf', 60)
+        wrapped_text = textwrap.fill(article["title"], width=30)
+        d.text((100, 100), wrapped_text, font=font_title, fill='black')
+        
+        # Save temporarily
+        temp_path = f"temp_{url}.png"
+        img.save(temp_path)
+        
+        return FileResponse(
+            temp_path,
+            media_type="image/png",
+            filename=f"article-{url}.png"
+        )
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

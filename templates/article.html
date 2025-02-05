@@ -4,6 +4,9 @@
 <script type="application/ld+json">
     {{ structured_data|safe }}
 </script>
+<!-- Add Open Graph image meta tag for social sharing -->
+<meta property="og:image" content="{{ request.url.scheme }}://{{ request.url.netloc }}/static/og-image.jpg">
+<meta name="twitter:image" content="{{ request.url.scheme }}://{{ request.url.netloc }}/static/og-image.jpg">
 {% endblock %}
 
 {% block title %}{{ article.title }}{% endblock %}
@@ -44,6 +47,45 @@
                 </div>
             </div>
             
+            <!-- Add Social Share Buttons -->
+            <div class="flex items-center gap-4 mb-6">
+                <span class="text-gray-600 text-sm font-medium">Share this:</span>
+                <!-- Native Web Share API Button -->
+                <button 
+                    onclick="shareArticle()" 
+                    class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-600 to-yellow-500 text-white rounded-lg hover:from-red-700 hover:to-yellow-600 transition-all duration-200"
+                >
+                    <ion-icon name="share-social" class="mr-2"></ion-icon>
+                    Share
+                </button>
+                
+                <!-- Direct Share Links -->
+                <div class="flex gap-2">
+                    <a href="https://wa.me/?text={{ article.title|urlencode }}%20{{ request.url._url|urlencode }}" 
+                       target="_blank"
+                       class="p-2 text-green-600 hover:bg-green-50 rounded-full transition-colors">
+                        <ion-icon name="logo-whatsapp" class="text-xl"></ion-icon>
+                    </a>
+                    
+                    <a href="https://telegram.me/share/url?url={{ request.url._url|urlencode }}&text={{ article.title|urlencode }}"
+                       target="_blank"
+                       class="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors">
+                        <ion-icon name="paper-plane" class="text-xl"></ion-icon>
+                    </a>
+                    
+                    <a href="https://twitter.com/intent/tweet?text={{ article.title|urlencode }}&url={{ request.url._url|urlencode }}"
+                       target="_blank"
+                       class="p-2 text-blue-400 hover:bg-blue-50 rounded-full transition-colors">
+                        <ion-icon name="logo-twitter" class="text-xl"></ion-icon>
+                    </a>
+                    
+                    <button onclick="copyToClipboard('{{ request.url._url }}')"
+                            class="p-2 text-gray-600 hover:bg-gray-50 rounded-full transition-colors">
+                        <ion-icon name="link" class="text-xl"></ion-icon>
+                    </button>
+                </div>
+            </div>
+
             <div class="prose max-w-none">
                 <p class="text-gray-700 text-lg leading-relaxed">
                     {{ article.description }}
@@ -85,4 +127,51 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Add JavaScript for sharing functionality -->
+<script>
+async function shareArticle() {
+    const shareData = {
+        title: '{{ article.title }}',
+        text: '{{ article.description }}',
+        url: window.location.href
+    };
+
+    try {
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback: show sharing buttons
+            alert('Use the sharing buttons below to share this article');
+        }
+    } catch (err) {
+        console.error('Error sharing:', err);
+    }
+}
+
+async function copyToClipboard(text) {
+    try {
+        await navigator.clipboard.writeText(text);
+        
+        // Show feedback toast
+        const toast = document.createElement('div');
+        toast.className = 'fixed bottom-4 right-4 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-lg transition-opacity duration-300';
+        toast.textContent = 'Link copied to clipboard!';
+        document.body.appendChild(toast);
+        
+        // Remove toast after 2 seconds
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 2000);
+    } catch (err) {
+        console.error('Failed to copy:', err);
+    }
+}
+
+// Initialize sharing buttons tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects for share buttons if needed
+});
+</script>
 {% endblock %}
