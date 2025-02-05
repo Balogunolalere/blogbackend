@@ -7,6 +7,7 @@ from functools import wraps
 from typing import Callable, List, Dict
 import logging
 from urllib.parse import quote, unquote
+import asyncio
 
 import os
 from dotenv import load_dotenv
@@ -281,19 +282,24 @@ async def article_details(request: Request, url: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/api/cron")
-async def cron_job(request: Request):
-    """Endpoint for Vercel cron job to fetch and store news"""
-    # Verify the request is from Vercel
-    if request.headers.get("authorization") != f"Bearer {os.getenv('CRON_SECRET')}":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+async def schedule_news_fetch():
+    """Schedule news fetching to run every 20 minutes"""
+    TWENTY_MINUTES = 20 * 60  # 20 minutes in seconds
     
-    try:
-        articles = await fetch_and_store_news()
-        return {"status": "success", "articles_count": len(articles)}
-    except Exception as e:
-        logger.error(f"Cron job failed: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+    while True:
+        try:
+            await fetch_and_store_news()
+            logger.info(f"Next news fetch scheduled in {TWENTY_MINUTES} seconds (20 minutes)")
+            await asyncio.sleep(TWENTY_MINUTES)
+        except Exception as e:
+            logger.error(f"Error in scheduled fetch: {str(e)}")
+            # If there's an error, wait 1 minute before retrying
+            await asyncio.sleep(60)
+
+@app.on_event("startup")
+async def startup_event():
+    """Start the news fetching schedule on startup"""
+    asyncio.create_task(schedule_news_fetch())
 
 if __name__ == "__main__":
     import uvicorn
