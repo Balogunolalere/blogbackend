@@ -283,24 +283,30 @@ async def article_details(request: Request, url: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 async def schedule_news_fetch():
-    """Schedule news fetching to run every 20 minutes"""
-    TWENTY_MINUTES = 20 * 60  # 20 minutes in seconds
+    """Schedule news fetching to run every 5 minutes"""
+    FIVE_MINUTES = 5 * 60  # 5 minutes in seconds
     
     while True:
         try:
             await fetch_and_store_news()
-            logger.info(f"Next news fetch scheduled in {TWENTY_MINUTES} seconds (20 minutes)")
-            await asyncio.sleep(TWENTY_MINUTES)
+            logger.info(f"Next news fetch scheduled in {FIVE_MINUTES} seconds (5 minutes)")
+            await asyncio.sleep(FIVE_MINUTES)
         except Exception as e:
             logger.error(f"Error in scheduled fetch: {str(e)}")
-            # If there's an error, wait 1 minute before retrying
-            await asyncio.sleep(60)
+            # If there's an error, wait 30 seconds before retrying
+            await asyncio.sleep(30)
 
 @app.on_event("startup")
 async def startup_event():
     """Start the news fetching schedule on startup"""
+    # Create task without explicitly passing loop
     asyncio.create_task(schedule_news_fetch())
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8000,
+        loop="none"  # Let uvicorn use the default event loop
+    )
