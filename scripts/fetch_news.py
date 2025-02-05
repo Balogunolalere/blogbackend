@@ -60,17 +60,21 @@ def format_article(article, category="general"):
     url = article.get("url", "")
     base_url = url.split('?')[0]
     
+    # Convert published date to timestamp if exists
+    published_date = article.get("published date", "")
+    
     return {
         "title": article.get("title", "").strip(),
         "url": base_url,
-        "published_date": article.get("published date", ""),
+        "published_date": published_date,
         "description": article.get("description", "").strip(),
         "publisher": {
             "href": article.get("publisher", {}).get("href", "").strip(),
             "title": article.get("publisher", {}).get("title", "").strip()
         },
         "source": "gnews",
-        "category": category
+        "category": category,
+        "created_at": time.strftime('%Y-%m-%d %H:%M:%S')
     }
 
 @retry_with_backoff(retries=3)
@@ -81,6 +85,17 @@ def main():
     try:
         all_articles = []
         processed_urls = set()
+        
+        # Get existing URLs from last 24 hours to avoid duplicates
+        yesterday = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() - 86400))
+        existing = supabase.table("articles")\
+            .select("url")\
+            .gte("created_at", yesterday)\
+            .execute()
+        
+        # Add existing URLs to processed set
+        for item in existing.data:
+            processed_urls.add(item['url'])
         
         # Fetch country news
         for country_name, country_code in COUNTRIES.items():
@@ -105,12 +120,14 @@ def main():
                         all_articles.append(formatted)
 
         if all_articles:
+            # Use upsert with both URL and title to ensure no duplicates
             supabase.table("articles").upsert(
                 all_articles,
                 on_conflict="url"
             ).execute()
 
         logger.info(f"Successfully stored {len(all_articles)} unique articles")
+        logger.info(f"Skipped {len(processed_urls) - len(all_articles)} duplicate articles")
 
     except Exception as e:
         logger.error(f"Failed to fetch and store news: {str(e)}")

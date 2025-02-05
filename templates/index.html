@@ -35,61 +35,76 @@
 {% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<div class="bg-white rounded-xl shadow-sm mb-4 sm:mb-8 p-4 sm:p-8">
-    <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">Stay Informed</h1>
-    <p class="text-base sm:text-lg md:text-xl text-gray-600 mb-4 sm:mb-6">Discover the latest news from around the world.</p>
-    
-    <!-- Search and Filter Section -->
-    <form method="get" class="space-y-4">
-        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
-            <div class="flex-1 relative">
-                <ion-icon name="search-outline" class="absolute left-3 top-3 text-gray-400"></ion-icon>
-                <input 
-                    type="text" 
-                    name="search" 
-                    value="{{ search or '' }}"
-                    placeholder="Search articles..." 
-                    class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+<!-- Hero Section with animated gradient -->
+<div class="bg-white/80 backdrop-blur-md rounded-xl shadow-lg mb-4 sm:mb-8 p-4 sm:p-8 border border-blue-100 hover:shadow-xl transition-all duration-300">
+    <div class="relative overflow-hidden">
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500 rounded-full opacity-10 animate-pulse"></div>
+        <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500 rounded-full opacity-10 animate-pulse delay-300"></div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2 sm:mb-4">Stay Informed</h1>
+        <p class="text-base sm:text-lg md:text-xl text-gray-600 mb-4 sm:mb-6">Discover the latest news from around the world.</p>
+        
+        <!-- Enhanced Search and Filter Section -->
+        <form method="get" class="space-y-4">
+            <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div class="flex-1 relative">
+                    <ion-icon name="search-outline" class="absolute left-3 top-3 text-gray-400"></ion-icon>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ search or '' }}"
+                        placeholder="Search articles..." 
+                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                </div>
+                
+                <div class="w-full md:w-48">
+                    <select 
+                        name="category" 
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
+                    >
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.lower() }}" {% if category == cat.lower() %}selected{% endif %}>
+                            {{ cat|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <button 
+                    type="submit" 
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
                 >
+                    Search
+                </button>
             </div>
-            
-            <div class="w-full md:w-48">
-                <select 
-                    name="category" 
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white"
-                >
-                    <option value="">All Categories</option>
-                    {% for cat in categories %}
-                    <option value="{{ cat.lower() }}" {% if category == cat.lower() %}selected{% endif %}>
-                        {{ cat|title }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-            <button 
-                type="submit" 
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-            >
-                Search
-            </button>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
-<!-- Articles Grid -->
+<!-- Category Pills -->
+<div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+    {% for cat in categories %}
+    <a href="/?category={{ cat.lower() }}" 
+       class="px-4 py-2 rounded-full text-sm font-medium {% if category == cat.lower() %}bg-blue-600 text-white{% else %}bg-white text-gray-600 hover:bg-blue-50{% endif %} shadow-sm transition-all duration-200 whitespace-nowrap">
+        {{ cat|title }}
+    </a>
+    {% endfor %}
+</div>
+
+<!-- Articles Grid with hover effects -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
     {% if articles %}
         {% for article in articles %}
-        <article class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 transform hover:-translate-y-1">
+        <article class="group bg-white/90 backdrop-blur-sm rounded-xl shadow-sm overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
             <a href="/article/{{ article.url|replace('/', '_')|urlencode }}" class="block">
                 <div class="p-4 sm:p-6">
-                    <div class="flex flex-wrap items-center gap-2 mb-3 sm:mb-4">
-                        <span class="px-2 sm:px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-50 rounded-full">
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <span class="px-3 py-1 text-xs font-semibold text-blue-600 bg-blue-50 rounded-full group-hover:bg-blue-100 transition-colors">
                             {{ article.category|title }}
                         </span>
-                        <span class="text-xs text-gray-500">
+                        <span class="flex items-center text-xs text-gray-500">
+                            <ion-icon name="time-outline" class="mr-1"></ion-icon>
                             {{ article.published_date }}
                         </span>
                     </div>
@@ -112,10 +127,10 @@
     {% endif %}
 </div>
 
-<!-- Pagination -->
+<!-- Enhanced Pagination -->
 {% if total_pages > 1 %}
 <div class="mt-8 sm:mt-12 flex justify-center">
-    <nav class="inline-flex flex-wrap justify-center rounded-lg shadow-sm overflow-hidden" aria-label="Pagination">
+    <nav class="inline-flex flex-wrap justify-center rounded-lg shadow-lg overflow-hidden bg-white/80 backdrop-blur-sm p-1" aria-label="Pagination">
         <!-- Previous Button -->
         {% if current_page > 1 %}
         <a href="?page={{ current_page - 1 }}{% if search %}&search={{ search }}{% endif %}{% if category %}&category={{ category }}{% endif %}"

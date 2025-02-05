@@ -43,10 +43,36 @@
             }
         }
     </script>
+    <style>
+        .animated-bg {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .news-ticker {
+            animation: ticker 20s linear infinite;
+        }
+        @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
 </head>
-<body class="bg-gray-50 font-[Inter] min-h-screen flex flex-col">
-    <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 font-[Inter] min-h-screen flex flex-col">
+    <!-- News Ticker -->
+    <div class="bg-blue-600 text-white overflow-hidden py-1">
+        <div class="news-ticker whitespace-nowrap">
+            🔥 Breaking News • 📈 Market Updates • 🌍 World Events • 💡 Tech Insights • ⚽ Sports Coverage
+        </div>
+    </div>
+
+    <!-- Navigation with glassmorphism -->
+    <nav class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex items-center">
@@ -82,8 +108,11 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        {% block content %}{% endblock %}
+    <main class="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 relative">
+        <div class="absolute inset-0 animated-bg opacity-5"></div>
+        <div class="relative">
+            {% block content %}{% endblock %}
+        </div>
     </main>
 
     <!-- Footer -->
