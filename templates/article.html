@@ -42,19 +42,22 @@
 
         <div class="relative p-4 sm:p-8 {% if not article.image %}pt-6{% endif %}">
             <div class="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-red-100 to-yellow-100 rounded-full opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
-            
             <!-- Category Badge -->
             <span class="relative inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-red-500 to-yellow-500 text-white shadow-md">
                 <ion-icon name="pricetag" class="mr-1"></ion-icon>
                 {{ article.category|title }}
             </span>
-            
             <!-- Enhanced Article Content -->
             <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-yellow-500 mt-3 sm:mt-4 mb-4 sm:mb-6">
                 {{ article.title }}
             </h1>
-            
             <div class="flex flex-wrap items-center gap-4 mb-6 sm:mb-8 text-gray-500">
+                {% if article.author %}
+                <div class="flex items-center">
+                    <ion-icon name="person" class="mr-2"></ion-icon>
+                    {{ article.author }}
+                </div>
+                {% endif %}
                 <div class="flex items-center">
                     <ion-icon name="newspaper" class="mr-2"></ion-icon>
                     {{ article.publisher.title }}
@@ -63,6 +66,16 @@
                     <ion-icon name="time" class="mr-2"></ion-icon>
                     {{ article.published_date }}
                 </div>
+                {% if article.tags %}
+                <div class="flex items-center">
+                    <ion-icon name="pricetags" class="mr-2"></ion-icon>
+                    <span>
+                        {% for tag in article.tags %}
+                            <span class="inline-block bg-yellow-100 text-yellow-800 px-2 py-1 rounded mr-1">{{ tag }}</span>
+                        {% endfor %}
+                    </span>
+                </div>
+                {% endif %}
             </div>
             
             <!-- Add Social Share Buttons -->
@@ -111,11 +124,17 @@
             </div>
 
             <div class="prose max-w-none">
+                {% if article.custom_content %}
+                <div class="text-gray-800 text-lg leading-relaxed">
+                    {{ article.content_html|safe }}
+                </div>
+                {% else %}
                 <p class="text-gray-700 text-lg leading-relaxed">
                     {{ article.description }}
                 </p>
-                
+                {% endif %}
                 <!-- Enhanced Read Full Article Button -->
+                {% if article.url %}
                 <div class="mt-8">
                     <a href="{{ article.url }}" 
                        target="_blank" 
@@ -124,6 +143,7 @@
                         Read Full Article
                     </a>
                 </div>
+                {% endif %}
             </div>
         </div>
     </article>
