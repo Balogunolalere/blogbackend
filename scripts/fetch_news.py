@@ -1,4 +1,4 @@
-from supabase import create_client, Client
+from pymongo import MongoClient, UpdateOne
 from gnews import GNews
 import os
 import time
@@ -6,23 +6,34 @@ import logging
 from functools import wraps
 from typing import Callable
 from urllib.parse import quote
+from dotenv import load_dotenv
+
+
+# Load environment variables strictly from .env
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), '..', '.env'), override=True)
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize Supabase client
-supabase: Client = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_KEY")
-)
+# Read connection info from .env only
+mongo_uri = os.environ["MONGODB_URI"]
+mongo_db_name = os.environ["MONGODB_DB"]
+mongo_collection_name = os.environ["MONGODB_COLLECTION"]
+mongo_client = MongoClient(mongo_uri)
+db = mongo_client[mongo_db_name]
+if mongo_collection_name not in db.list_collection_names():
+    db.create_collection(mongo_collection_name)
+articles_collection = db[mongo_collection_name]
+# Ensure unique index on url for articles
+articles_collection.create_index("url", unique=True)
 
 # Initialize GNews
 google_news = GNews(
-    language=os.getenv("GNEWS_LANGUAGE", "en"),
-    country=os.getenv("GNEWS_COUNTRY", "NG"),
-    period=os.getenv("GNEWS_PERIOD", "7d"),
-    max_results=int(os.getenv("GNEWS_MAX_RESULTS", 10))
+    language=os.environ["GNEWS_LANGUAGE"],
+    country=os.environ["GNEWS_COUNTRY"],
+    period=os.environ["GNEWS_PERIOD"],
+    max_results=int(os.environ["GNEWS_MAX_RESULTS"])
 )
 
 TOPICS = ['WORLD', 'NATION', 'BUSINESS', 'TECHNOLOGY', 'ENTERTAINMENT', 'SPORTS', 
@@ -59,13 +70,12 @@ def retry_with_backoff(retries=3, backoff_in_seconds=1):
 def format_article(article, category="general"):
     url = article.get("url", "")
     base_url = url.split('?')[0]
-    
     return {
         "title": article.get("title", "").strip(),
         "url": base_url,
         "published_date": article.get("published date", ""),
         "description": article.get("description", "").strip(),
-        "image": article.get("image", ""),  # Add image URL
+        "image": article.get("image", ""),
         "publisher": {
             "href": article.get("publisher", {}).get("href", "").strip(),
             "title": article.get("publisher", {}).get("title", "").strip()
@@ -80,21 +90,20 @@ def fetch_news(news_func, *args):
     return news_func(*args)
 
 def main():
+    print(f"Using database: {mongo_db_name}")
+    print(f"Using collection: {mongo_collection_name}")
     try:
         all_articles = []
         processed_urls = set()
-        
+
         # Get existing URLs from last 24 hours to avoid duplicates
-        yesterday = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time() - 86400))
-        existing = supabase.table("articles")\
-            .select("url")\
-            .gte("created_at", yesterday)\
-            .execute()
-        
-        # Add existing URLs to processed set
-        for item in existing.data:
+        yesterday = time.time() - 86400
+        existing = articles_collection.find({
+            "created_at": {"$gte": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(yesterday))}
+        }, {"url": 1})
+        for item in existing:
             processed_urls.add(item['url'])
-        
+
         # Fetch country news
         for country_name, country_code in COUNTRIES.items():
             google_news.country = country_code
@@ -118,11 +127,13 @@ def main():
                         all_articles.append(formatted)
 
         if all_articles:
-            # Use upsert with both URL and title to ensure no duplicates
-            supabase.table("articles").upsert(
-                all_articles,
-                on_conflict="url"
-            ).execute()
+            # Upsert articles by url
+            operations = []
+            for article in all_articles:
+                operations.append(
+                    UpdateOne({"url": article["url"]}, {"$set": article}, upsert=True)
+                )
+            result = articles_collection.bulk_write(operations)
 
         logger.info(f"Successfully stored {len(all_articles)} unique articles")
         logger.info(f"Skipped {len(processed_urls) - len(all_articles)} duplicate articles")
